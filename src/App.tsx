@@ -136,6 +136,9 @@ function App() {
         accept=".xlsx, .xls, .csv"
         onChange={handleFileUpload}
       />
+      <p style={{ fontSize: "0.60rem", color: "#555", marginTop: "0.5rem" }}>
+        Accepted file types: <strong>.xlsx, .xls, .csv</strong>
+      </p>
       <br />
       <button onClick={handleSubmit} disabled={loading}>
         {loading ? "Processing..." : "Download ZIP"}
