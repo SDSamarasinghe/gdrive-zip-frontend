@@ -33,7 +33,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5004/download-zip", // Ensure this matches your backend URL
+        `${import.meta.env.VITE_API_URL}/download-zip`, // Use the API URL from the .env file
         { urls: urlList },
         { responseType: "blob" }
       );
