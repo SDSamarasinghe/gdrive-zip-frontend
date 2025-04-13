@@ -33,7 +33,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/download-zip`, // Use the API URL from the .env file
+        "https://gdrive-zip-backend.onrender.com/download-zip",
         { urls: urlList },
         { responseType: "blob" }
       );
