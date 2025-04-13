@@ -25,8 +25,6 @@ function App() {
       })
       .filter(Boolean);
 
-    console.log("🚀 ~ handleSubmit ~ urlList:", urlList);
-
     if (urlList.length === 0) {
       alert("No valid Google Drive URLs found.");
       setLoading(false);
@@ -39,7 +37,6 @@ function App() {
         { urls: urlList },
         { responseType: "blob" }
       );
-      console.log("🚀 ~ handleSubmit ~ response:", response);
 
       const blob = new Blob([response.data], { type: "application/zip" });
       const url = URL.createObjectURL(blob);
@@ -48,7 +45,6 @@ function App() {
       link.download = "download.zip";
       link.click();
     } catch (err) {
-      console.log("🚀 ~ handleSubmit ~ err:", err);
       console.error("Error during file download:", err);
       alert("Something went wrong. Check the console.");
     } finally {
