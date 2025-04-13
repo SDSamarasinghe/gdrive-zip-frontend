@@ -1,10 +1,69 @@
 import { useState } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 import "./App.css";
 
 function App() {
   const [urls, setUrls] = useState<string>("");
   const [loading, setLoading] = useState(false);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = e.target.files?.[0];
+    if (uploadedFile) {
+      const fileExtension = uploadedFile.name.split(".").pop()?.toLowerCase();
+      if (fileExtension === "csv") {
+        parseCSVFile(uploadedFile);
+      } else if (fileExtension === "xlsx" || fileExtension === "xls") {
+        parseExcelFile(uploadedFile);
+      } else {
+        alert(
+          "Unsupported file format. Please upload a .csv, .xlsx, or .xls file."
+        );
+      }
+    }
+  };
+
+  const parseExcelFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const data = new Uint8Array(event.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as string[][];
+
+      // Extract links from the Excel file
+      const extractedLinks = rows
+        .flat()
+        .filter((cell) => typeof cell === "string" && cell.startsWith("http"));
+      setUrls((prevUrls) =>
+        [...prevUrls.split("\n"), ...extractedLinks].join("\n")
+      );
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const parseCSVFile = (file: File) => {
+    Papa.parse(file, {
+      complete: (result: any) => {
+        const rows = result.data as string[][];
+        // Extract links from the CSV file
+        const extractedLinks = rows
+          .flat()
+          .filter(
+            (cell) => typeof cell === "string" && cell.startsWith("http")
+          );
+        setUrls((prevUrls) =>
+          [...prevUrls.split("\n"), ...extractedLinks].join("\n")
+        );
+      },
+      error: (err: any) => {
+        console.error("Error parsing CSV file:", err);
+        alert("Failed to parse the CSV file. Please check the file format.");
+      },
+    });
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -61,6 +120,12 @@ function App() {
         onChange={(e) => setUrls(e.target.value)}
         rows={10}
         cols={60}
+      />
+      <br />
+      <input
+        type="file"
+        accept=".xlsx, .xls, .csv"
+        onChange={handleFileUpload}
       />
       <br />
       <button onClick={handleSubmit} disabled={loading}>
