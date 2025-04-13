@@ -8,17 +8,38 @@ function App() {
 
   const handleSubmit = async () => {
     setLoading(true);
+
+    // Extract Google Drive file IDs and construct direct download links
     const urlList = urls
       .split("\n")
-      .map((u) => u.trim())
+      .map((u) => {
+        const match = u.match(/q=([^&]+)/); // Extract the "q" parameter from the URL
+        if (match) {
+          const decodedUrl = decodeURIComponent(match[1]);
+          const driveMatch = decodedUrl.match(/\/file\/d\/([^/]+)/); // Extract the file ID from the URL
+          return driveMatch
+            ? `https://drive.google.com/uc?id=${driveMatch[1]}`
+            : null;
+        }
+        return null;
+      })
       .filter(Boolean);
+
+    console.log("🚀 ~ handleSubmit ~ urlList:", urlList);
+
+    if (urlList.length === 0) {
+      alert("No valid Google Drive URLs found.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/download-zip",
+        "http://localhost:5004/download-zip", // Ensure this matches your backend URL
         { urls: urlList },
         { responseType: "blob" }
       );
+      console.log("🚀 ~ handleSubmit ~ response:", response);
 
       const blob = new Blob([response.data], { type: "application/zip" });
       const url = URL.createObjectURL(blob);
@@ -27,8 +48,9 @@ function App() {
       link.download = "download.zip";
       link.click();
     } catch (err) {
+      console.log("🚀 ~ handleSubmit ~ err:", err);
+      console.error("Error during file download:", err);
       alert("Something went wrong. Check the console.");
-      console.error(err);
     } finally {
       setLoading(false);
     }
