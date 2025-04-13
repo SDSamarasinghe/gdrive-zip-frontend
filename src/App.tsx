@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
@@ -7,6 +7,11 @@ import "./App.css";
 function App() {
   const [urls, setUrls] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [showGift, setShowGift] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => setShowGift(true), 2000);
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -33,7 +38,6 @@ function App() {
       const sheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as string[][];
 
-      // Extract links from the Excel file
       const extractedLinks = rows
         .flat()
         .filter((cell) => typeof cell === "string" && cell.startsWith("http"));
@@ -48,7 +52,6 @@ function App() {
     Papa.parse(file, {
       complete: (result: any) => {
         const rows = result.data as string[][];
-        // Extract links from the CSV file
         const extractedLinks = rows
           .flat()
           .filter(
@@ -67,15 +70,13 @@ function App() {
 
   const handleSubmit = async () => {
     setLoading(true);
-
-    // Extract Google Drive file IDs and construct direct download links
     const urlList = urls
       .split("\n")
       .map((u) => {
-        const match = u.match(/q=([^&]+)/); // Extract the "q" parameter from the URL
+        const match = u.match(/q=([^&]+)/);
         if (match) {
           const decodedUrl = decodeURIComponent(match[1]);
-          const driveMatch = decodedUrl.match(/\/file\/d\/([^/]+)/); // Extract the file ID from the URL
+          const driveMatch = decodedUrl.match(/\/file\/d\/([^/]+)/);
           return driveMatch
             ? `https://drive.google.com/uc?id=${driveMatch[1]}`
             : null;
@@ -113,6 +114,14 @@ function App() {
 
   return (
     <div className="App">
+      {showGift && (
+        <div className="gift-box">
+          <div className="gift-lid" />
+          <div className="gift-content">
+            🎁 This is my New Year gift for you! 🎉
+          </div>
+        </div>
+      )}
       <h1>Google Drive File Downloader</h1>
       <textarea
         placeholder="Paste Google Drive redirect URLs here (one per line)"
