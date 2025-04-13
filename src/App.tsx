@@ -70,6 +70,9 @@ function App() {
       <button onClick={handleSubmit} disabled={loading}>
         {loading ? "Processing..." : "Download ZIP"}
       </button>
+      <footer style={{ marginTop: "2rem", fontSize: "0.9rem", color: "#888" }}>
+        Created by Sadish {new Date().getFullYear()}
+      </footer>
     </div>
   );
 }
